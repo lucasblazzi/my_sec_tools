@@ -9,8 +9,18 @@ ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 
 def dns_list(serviceurl):                                       #handle webpage (urllib)      
-    uh = urllib.request.urlopen(serviceurl, context=ctx)
-    data = uh.read().decode()
+    user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:74.0) Gecko/20100101 Firefox/74.0'
+    request = urllib.request.Request(serviceurl,headers={'User-Agent': user_agent})
+    try:
+        handler = urllib.request.urlopen(request)
+    except urllib.error.HTTPError as e:                        # manipulando erros HTTP
+        print("CODE:", e.code, " -->", e.reason.upper())       
+        exit()
+    except urllib.error.URLError:                              # manipulando erros na URL
+        print("Server down or incorrect domain")
+        exit()
+
+    data = handler.read().decode()
 
     try:                                                        #loads json
         js = json.loads(data)
@@ -22,26 +32,25 @@ def dns_list(serviceurl):                                       #handle webpage 
         for dns in dns_name:
             print(dns)
 
+def service_url(address):
+    print()
+    print('Retrieving subdomains for:', address)
+    print()
+    serviceurl = 'https://api.certspotter.com/v1/issuances?domain=' + address + '&include_subdomains=true&expand=dns_names&expand=issuer&expand=cert'
+    dns_list(serviceurl)
+
 def man_input(address):                                         #manual input of domains
     while True:
         address = input('Enter domain: ')
-        print()
-        print('Retrieving subdomains for:', address)
-        print()
-        serviceurl = 'https://api.certspotter.com/v1/issuances?domain=' + address + '&include_subdomains=true&expand=dns_names&expand=issuer&expand=cert'
         if len(address) < 1: break
-        dns_list(serviceurl)
+        service_url(address)
 
 def file_input():
     fname = input("file name:")
     fh = open(fname)
     for line in fh:
         address = line.rstrip()
-        print()
-        print('Retrieving subdomains for:', address)
-        print()
-        serviceurl = 'https://api.certspotter.com/v1/issuances?domain=' + address + '&include_subdomains=true&expand=dns_names&expand=issuer&expand=cert'
-        dns_list(serviceurl)
+        service_url(address)
 
 def menu():
     print("------------------------------------")
