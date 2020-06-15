@@ -1,6 +1,7 @@
 import urllib.request, urllib.parse, urllib.error
 import json
 import ssl
+import argparse
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
@@ -41,8 +42,27 @@ def service_url(address):
     serviceurl = 'https://crt.sh/?q=%25.'+address+'&output=json'
     dns_list(serviceurl)
 
+def file_input(fname):
+    fh = open(fname)
+    for line in fh:
+        address = line.rstrip()
+        service_url(address)
 
-address = input('Target: ')
-service_url(address)
 
+def menu():
+    parser = argparse.ArgumentParser(description='Find subdomains using certspotter')
+    parser.add_argument("-i", '--input', type=str,
+                        help="single target input")
+    parser.add_argument("-f", "--file", type=str,
+                        help="file list of targets")
+    #parser.add_argument("-o", "--output", type=str,
+    #                   help="output the results to a .txt file")
+    args = parser.parse_args()
+
+    if args.input:
+        service_url(args.input)
+    if args.file:
+        file_input(args.file)
+
+menu()
 
