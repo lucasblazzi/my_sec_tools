@@ -74,9 +74,10 @@ def print_subdomains(subdomains):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Find subdomains using certspotter and crtsh')
-    parser.add_argument("-u", '--url', type=str,
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-u", '--url', type=str,
                         help="single target - simple input")
-    parser.add_argument("-f", '--file', type=str,
+    group.add_argument("-f", '--file', type=str,
                         help="multiple targets - input from file")
     args = parser.parse_args()
     if args.url:
